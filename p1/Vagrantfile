@@ -1,0 +1,22 @@
+Vagrant.configure("2") do |config|
+
+    # Shell command to run when the virtual machine is created
+    config.vm.provision "shell", inline: "echo Hello"
+
+    # Define the virtual machine configuration
+    config.vm.provider "virtualbox" do |vb|
+        vb.cpus = 1
+        vb.memory = "512"
+    end
+
+    # Server
+    config.vm.define "wloS" do |wloS|
+        wloS.vm.box = "hashicorp/bionic64"
+    end
+
+    # Server Worker
+    config.vm.define "cmariotSW" do |cmariotSW|
+        cmariotSW.vm.box = "hashicorp/bionic64"
+    end
+
+end
