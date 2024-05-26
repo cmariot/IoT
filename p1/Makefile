@@ -12,17 +12,15 @@ restart:
 	vagrant reload wloS
 	vagrant reload cmariotSW
 
-help:
-	vagrant global-status
-	vagrant port wloS
-	vagrant port cmariotSW
-	vagrant --help
-
 clean:
 	vagrant destroy -f wloS
 	vagrant destroy -f cmariotSW
+	rm -f conf/token
 
-fclean:
-	vagrant destroy -f wloS
-	vagrant destroy -f cmariotSW
+fclean: clean
 	vagrant box remove $(BOX_NAME)
+
+re: clean up
+
+status:
+	vagrant status

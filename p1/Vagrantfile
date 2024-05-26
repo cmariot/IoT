@@ -1,53 +1,65 @@
+BOX_IMAGE = "bento/ubuntu-24.04"
+VM_PROVIDER = "vmware_fusion"
+
+# Server
+SERVER_NAME = "wloS"
+SERVER_IP = "192.168.56.110"
+
+# ServerWorker
+SERVER_WORKER_NAME = "cmariotSW"
+SERVER_WORKER_IP = "192.168.56.111"
+
+
 Vagrant.configure("2") do |config|
 
-    # Define the first VM: Server
-    config.vm.define "wloS" do |server|
-        server.vm.box = "bento/ubuntu-24.04"
-        server.vm.hostname = "wloS"
-        server.vm.network "private_network", ip: "192.168.56.110"
-        server.vm.provider "virtualbox" do |vb|
-            vb.cpus = 1
-            vb.memory = "1024"
-            # vb.gui = true
-        end
-        server.vm.provision "shell", inline: <<-SHELL
-            sudo echo "192.168.56.111 cmariotSW" >> /etc/hosts
-            sudo apt-get update
-            # TODO: Install k3s in controller mode
-            curl -sfL https://get.k3s.io | sh -
+    # Define the default provider (virtualBox or vmware_fusion)
+    config.vm.provider VM_PROVIDER do |vm_provider|
+        vm_provider.cpus = 2
+        vm_provider.memory = "1024"
+        # vm_provider.gui = true
+    end
 
-        SHELL
+    # Define the first VM: Server
+    config.vm.define SERVER_NAME do |server|
+        server.vm.box = BOX_IMAGE
+        server.vm.hostname = SERVER_NAME
+        server.vm.network "private_network", ip: SERVER_IP
+        server.vm.provision "shell", path: "scripts/server.sh"
     end
 
     # Define the second VM: ServerWorker
-    config.vm.define "cmariotSW" do |serverWorker|
-        serverWorker.vm.box = "bento/ubuntu-24.04"
-        serverWorker.vm.hostname = "cmariotSW"
-        serverWorker.vm.network "private_network", ip: "192.168.56.111"
-        serverWorker.vm.provider "virtualbox" do |vb|
-            vb.cpus = 1
-            vb.memory = "1024"
-            # vb.gui = true
-        end
-        serverWorker.vm.provision "shell", inline: <<-SHELL
-            sudo echo "192.168.56.110 wloS" >> /etc/hosts
-            sudo apt-get update
-            # TODO: Install k3s in agent mode
-            export K3S_URL=https://wloS:6443
-            export K3S_TOKEN=
-            curl -sfL https://get.k3s.io | sh -
-        SHELL
+    config.vm.define SERVER_WORKER_NAME do |serverWorker|
+        serverWorker.vm.box = BOX_IMAGE
+        serverWorker.vm.hostname = SERVER_WORKER_NAME
+        serverWorker.vm.network "private_network", ip: SERVER_WORKER_IP
+        serverWorker.vm.provision "shell", path: "scripts/server_worker.sh"
     end
 
 end
 
 
+# SSH into the VMs
+# vagrant ssh wloS
+# vagrant ssh cmariotSW
+
+# SSH into the VMs using the ssh-config file
+# vagrant ssh-config wloS > ssh-config-wloS
+# ssh -F ssh-config-wloS wloS
+
 # Check the IP address of the VMs
-# vagrant ssh Server -c "ip a show eth1"
 # ip addr show eth1
 
+# Check the status of the K3S cluster
+# kubectl get nodes -o wide
 
-# Documentation :
+# Server status :
+# sudo systemctl status k3s
+
+# ServerWorker status :
+# sudo systemctl status k3s-agent
+
+
+# Vagrant Documentation :
 # Vagrantfile : https://developer.hashicorp.com/vagrant/docs/vagrantfile
 # Multi-Machine : https://developer.hashicorp.com/vagrant/docs/multi-machine
 # Providers : https://developer.hashicorp.com/vagrant/docs/providers
@@ -55,3 +67,7 @@ end
 # Private Networks : https://developer.hashicorp.com/vagrant/docs/networking/private_network
 # SSH Settings : https://developer.hashicorp.com/vagrant/docs/vagrantfile/ssh_settings
 # Shell Provisioner : https://developer.hashicorp.com/vagrant/docs/provisioning/shell
+
+# K3S Documentation :
+# https://docs.k3s.io/quick-start
+# https://docs.k3s.io/installation/configuration
