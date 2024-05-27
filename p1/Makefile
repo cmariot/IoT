@@ -15,6 +15,7 @@ restart:
 clean:
 	vagrant destroy -f wloS
 	vagrant destroy -f cmariotSW
+	rm -rf .vagrant
 	rm -f confs/token
 
 fclean: clean
