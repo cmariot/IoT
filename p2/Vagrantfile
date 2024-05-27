@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
@@ -92,3 +93,38 @@ Vagrant.configure("2") do |config|
   #   apt-get install -y apache2
   # SHELL
 end
+=======
+Vagrant.configure("2") do |p2|
+
+    # Define the first VM: Server
+    p2.vm.define "wloS" do |server|
+        server.vm.box = "bento/ubuntu-24.04"
+        server.vm.hostname = "wloS"
+        server.vm.network "private_network", ip: "192.168.56.110"
+        server.vm.provider "vmware_fusion" do |vb|
+            vb.cpus = 1
+            vb.memory = "2048"
+            # vb.gui = true
+        end
+        server.vm.provision "shell", inline: <<-SHELL
+            sudo apt-get update
+            curl -sfL https://get.k3s.io | sh -
+        SHELL
+    end
+
+    # TODO: Auto-Deploying Manifests (AddOns)
+    # https://docs.k3s.io/installation/packaged-components
+    # app-one, app-two (3 replicas) and app-three
+
+    # Pods : https://kubernetes.io/docs/concepts/workloads/pods/
+    # Deployments : https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
+    # Services : https://kubernetes.io/docs/concepts/services-networking/service/
+    # Replicas
+
+end
+
+# Documentation :
+# Managing Packaged Components : https://docs.k3s.io/installation/packaged-components
+# Learn Kubernetes Basics : https://kubernetes.io/docs/tutorials/kubernetes-basics/
+# Hello Minikube : https://kubernetes.io/docs/tutorials/hello-minikube/
+>>>>>>> m1
