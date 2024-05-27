@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # # Install k3s on the server
-curl -sfL https://get.k3s.io | sh -s - --write-kubeconfig-mode=644 --node-ip=192.168.56.110
+curl -sfL https://get.k3s.io | sh -s - --write-kubeconfig-mode=644 --node-external-ip="192.168.56.110" --flannel-iface="eth1"
 
 # # Share the k3s server-token with the host machine
 mkdir -p /vagrant/confs
