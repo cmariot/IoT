@@ -15,7 +15,7 @@ restart:
 clean:
 	vagrant destroy -f wloS
 	vagrant destroy -f cmariotSW
-	rm -f conf/token
+	rm -f confs/token
 
 fclean: clean
 	vagrant box remove $(BOX_NAME)
