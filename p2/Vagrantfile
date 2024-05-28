@@ -1,5 +1,5 @@
 BOX_IMAGE = "bento/ubuntu-24.04"
-VM_PROVIDER = "virtualbox"
+VM_PROVIDER = "vmware_fusion"
 
 # Server
 SERVER_NAME = "cmariotS"

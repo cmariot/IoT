@@ -1,23 +1,93 @@
 # apiVersion: Which version of the Kubernetes API you're using to create this object
 apiVersion: apps/v1
+
 # kind: What kind of object you want to create
 kind: Deployment
+
 # metadata: Data that helps uniquely identify the object, including a name string, UID, and optional namespace
 metadata:
-  name: app1-deployment
+  name: app-one
+
 # spec: What state you desire for the object
 spec:
   selector:
     matchLabels:
-      app: app1
-  replicas: 1 # tells deployment to run 2 pods matching the template
+      app: app-one
+  replicas: 1
   template:
     metadata:
       labels:
-        app: app1
+        app: app-one
     spec:
       containers:
       - name: app1
         image: cmariot/app1
         ports:
-        - containerPort: 8080 #internal port
+        - containerPort: 80 #internal port
+
+# Pod status still ContainerCreating :
+# kubectl get events --sort-by=.metadata.creationTimestamp
+
+---
+
+# apiVersion: Which version of the Kubernetes API you're using to create this object
+apiVersion: apps/v1
+
+# kind: What kind of object you want to create
+kind: Deployment
+
+# metadata: Data that helps uniquely identify the object, including a name string, UID, and optional namespace
+metadata:
+  name: app-two
+
+# spec: What state you desire for the object
+spec:
+  selector:
+    matchLabels:
+      app: app-two
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: app-two
+    spec:
+      containers:
+      - name: app2
+        image: cmariot/app2
+        ports:
+        - containerPort: 80 #internal port
+
+# Pod status still ContainerCreating :
+# kubectl get events --sort-by=.metadata.creationTimestamp
+
+---
+
+# apiVersion: Which version of the Kubernetes API you're using to create this object
+apiVersion: apps/v1
+
+# kind: What kind of object you want to create
+kind: Deployment
+
+# metadata: Data that helps uniquely identify the object, including a name string, UID, and optional namespace
+metadata:
+  name: app-three
+
+# spec: What state you desire for the object
+spec:
+  selector:
+    matchLabels:
+      app: app-three
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: app-three
+    spec:
+      containers:
+      - name: app3
+        image: cmariot/app3
+        ports:
+        - containerPort: 80 #internal port
+
+# Pod status still ContainerCreating :
+# kubectl get events --sort-by=.metadata.creationTimestamp

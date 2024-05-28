@@ -5,3 +5,4 @@ curl -sfL https://get.k3s.io | sh -s - --write-kubeconfig-mode=644 --flannel-ifa
 
 kubectl apply -f /vagrant/confs/deployment.yaml
 kubectl apply -f /vagrant/confs/service.yaml
+kubectl apply -f /vagrant/confs/ingress.yaml

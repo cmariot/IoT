@@ -1,13 +1,39 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: app1-service
+    name: app-one
 spec:
-  selector:
-    app:  app1 # Matches pods with label "app: helloworld"
-  ports:
-  - protocol: TCP
-    port: 80  # Service port to expose
-    targetPort: 8080  # Maps to container port
-  type: NodePort
-  # type: LoadBalancer  # Optional, can be NodePort or ClusterIP for internal access
+    selector:
+        app:  app-one # Matches pods with label "app: app-one"
+    ports:
+        - protocol: TCP
+          port: 80  # Service port to expose
+          targetPort: 80  # Maps to container port
+    type: ClusterIP
+    # type: LoadBalancer  # Optional, can be NodePort or ClusterIP for internal access
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: app-two
+spec:
+    selector:
+        app:  app-two
+    ports:
+        - protocol: TCP
+          port: 80
+          targetPort: 80
+    type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: app-three
+spec:
+    selector:
+        app:  app-three
+    ports:
+        - protocol: TCP
+          port: 80
+          targetPort: 80
+    type: ClusterIP
