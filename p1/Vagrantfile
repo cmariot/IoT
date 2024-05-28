@@ -71,3 +71,5 @@ end
 # K3S Documentation :
 # https://docs.k3s.io/quick-start
 # https://docs.k3s.io/installation/configuration
+# Server configuration : https://docs.k3s.io/cli/server
+# Agent configuration : https://docs.k3s.io/cli/agent

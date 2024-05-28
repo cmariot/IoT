@@ -14,7 +14,7 @@ Vagrant.configure("2") do |config|
         vm_provider.memory = "1024"
     end
 
-    # Define the first VM: Server
+    # Define the VM: Server
     config.vm.define SERVER_NAME do |server|
         server.vm.box = BOX_IMAGE
         server.vm.hostname = SERVER_NAME
