@@ -1,0 +1,7 @@
+services:
+  app2:
+    build: .
+    ports:
+      - "80:80"
+    volumes:
+      - ./srcs/html:/usr/share/nginx/html
