@@ -7,6 +7,7 @@ spec:
     app:  app1 # Matches pods with label "app: helloworld"
   ports:
   - protocol: TCP
-    port: 80  # Service port
-    targetPort: 80  # Maps to container port
+    port: 80  # Service port to expose
+    targetPort: 8080  # Maps to container port
+  type: NodePort
   # type: LoadBalancer  # Optional, can be NodePort or ClusterIP for internal access

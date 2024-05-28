@@ -1,22 +1,16 @@
 # apiVersion: Which version of the Kubernetes API you're using to create this object
 apiVersion: apps/v1
-
 # kind: What kind of object you want to create
 kind: Deployment
-
 # metadata: Data that helps uniquely identify the object, including a name string, UID, and optional namespace
 metadata:
   name: app1-deployment
-
 # spec: What state you desire for the object
 spec:
-
   selector:
     matchLabels:
       app: app1
-
   replicas: 1 # tells deployment to run 2 pods matching the template
-
   template:
     metadata:
       labels:
@@ -26,4 +20,4 @@ spec:
       - name: app1
         image: cmariot/app1
         ports:
-        - containerPort: 80
+        - containerPort: 8080 #internal port
