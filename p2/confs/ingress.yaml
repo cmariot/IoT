@@ -1,25 +1,23 @@
-apiVersion: extensions/v1beta1  # Assuming you're using extensions/v1beta1 API version
-# apiVersion: networking.k8s.io/v1
+apiVersion: networking.k8s.io/v1  # Assuming you're using networking.k8s.io/v1 API version
+
+# apiVersion: extensions/v1beta1 (uncomment if using older API version)
 kind: Ingress
 metadata:
   name: multi-host-ingress
 spec:
   rules:
-  - host: host1.example.com
+  - host: app1
     http:
       paths:
-      - backend:
-          serviceName: <app1_service_name>  # Replace with your first application's service name
-          servicePort: 8080
-  - host: host2.example.com
-    http:
-      paths:
-      - backend:
-          serviceName: <app2_service_name>  # Replace with your second application's service name
-          servicePort: 8080
-  - host: host3.example.com
-    http:
-      paths:
-      - backend:
-          serviceName: <app3_service_name>  # Replace with your third application's service name
-          servicePort: 8080
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: app1
+              port:
+                number: 80
+        # service:
+        # - serviceName: app1  # Replace with your service name
+        #   servicePort: 8080
+  # - host: host2.example.com (uncomment and configure similarly)
+  # - host: host3.example.com (uncomment and configure similarly)
