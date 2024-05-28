@@ -1,5 +1,8 @@
-BOX_IMAGE = "hashicorp/bionic64"
-VM_PROVIDER = "virtualbox"
+# VM_PROVIDER = "virtualbox"
+# BOX_IMAGE = "hashicorp/bionic64"      # TODO: Change the box image
+
+VM_PROVIDER = "vmware_fusion"
+BOX_IMAGE = "bento/ubuntu-24.04"
 
 # Server
 SERVER_NAME = "cmariotS"
@@ -14,7 +17,7 @@ Vagrant.configure("2") do |config|
         vm_provider.memory = "1024"
     end
 
-    # Define the first VM: Server
+    # Define the VM: Server
     config.vm.define SERVER_NAME do |server|
         server.vm.box = BOX_IMAGE
         server.vm.hostname = SERVER_NAME

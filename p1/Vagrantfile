@@ -1,5 +1,8 @@
-BOX_IMAGE = "hashicorp/bionic64"
-VM_PROVIDER = "virtualbox"
+# VM_PROVIDER = "virtualbox"
+# BOX_IMAGE = "hashicorp/bionic64"      # TODO: Change the box image
+
+VM_PROVIDER = "vmware_fusion"
+BOX_IMAGE = "bento/ubuntu-24.04"
 
 # Server
 SERVER_NAME = "wloS"
@@ -71,3 +74,5 @@ end
 # K3S Documentation :
 # https://docs.k3s.io/quick-start
 # https://docs.k3s.io/installation/configuration
+# Server configuration : https://docs.k3s.io/cli/server
+# Agent configuration : https://docs.k3s.io/cli/agent
