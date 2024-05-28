@@ -1,4 +1,4 @@
-BOX_IMAGE = "hashicorp/bionic64"
+BOX_IMAGE = "bento/ubuntu-24.04"
 VM_PROVIDER = "virtualbox"
 
 # Server
