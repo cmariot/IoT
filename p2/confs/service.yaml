@@ -9,7 +9,7 @@ spec:
         - protocol: TCP
           port: 80  # Service port to expose
           targetPort: 80  # Maps to container port
-    type: ClusterIP
+    type: NodePort 
     # type: LoadBalancer  # Optional, can be NodePort or ClusterIP for internal access
 ---
 apiVersion: v1
