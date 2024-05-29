@@ -15,6 +15,15 @@ spec:
               name: app1-service
               port:
                 number: 80
+  - http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: app1-service
+              port:
+                number: 80
         # service:
         # - serviceName: app1  # Replace with your service name
         #   servicePort: 8080
