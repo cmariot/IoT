@@ -15,25 +15,25 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-    name: app-two
+  name: app2-service
 spec:
-    selector:
-        app: app-two
-    ports:
-        - protocol: TCP
-          port: 80
-          targetPort: 80
-    # type: ClusterIP
+  selector:
+    app: app2
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: ClusterIP
 ---
 apiVersion: v1
 kind: Service
 metadata:
-    name: app-three
+   name: app3-service
 spec:
-    selector:
-        app: app-three
-    ports:
-        - protocol: TCP
-          port: 80
-          targetPort: 80
-    # type: ClusterIP
+  selector:
+    app: app3
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: ClusterIP

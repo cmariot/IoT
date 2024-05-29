@@ -6,7 +6,7 @@ spec:
   selector:
     matchLabels:
       app: app1
-  replicas: 1 # Number of pods to run
+  replicas: 1
   template:
     metadata:
       labels:
@@ -14,9 +14,9 @@ spec:
     spec:
       containers:
       - name: app1
-        image: cmariot/app1  # Replace with your application image
+        image: cmariot/app1
         ports:
-        - containerPort: 80  # Port your application listens on
+        - containerPort: 80 #internal port
 
 
 # Pod status still ContainerCreating :
@@ -26,16 +26,16 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app-two
+  name: app2-deployment
 spec:
   selector:
     matchLabels:
-      app: app-two
+      app: app2
   replicas: 1
   template:
     metadata:
       labels:
-        app: app-two
+        app: app2
     spec:
       containers:
       - name: app2
@@ -48,16 +48,16 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app-three
+  name: app3-deployment
 spec:
   selector:
     matchLabels:
-      app: app-three
+      app: app3
   replicas: 1
   template:
     metadata:
       labels:
-        app: app-three
+        app: app3
     spec:
       containers:
       - name: app3

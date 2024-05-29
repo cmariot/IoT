@@ -5,7 +5,7 @@ metadata:
   name: multi-host-ingress
 spec:
   rules:
-  - host: app1.example.com
+  - host: app1.com
     http:
       paths:
         - path: /
@@ -15,17 +15,22 @@ spec:
               name: app1-service
               port:
                 number: 80
+  - host: app2.com
+    http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: app2-service
+              port:
+                number: 80
   - http:
       paths:
         - path: /
           pathType: Prefix
           backend:
             service:
-              name: app1-service
+              name: app3-service
               port:
                 number: 80
-        # service:
-        # - serviceName: app1  # Replace with your service name
-        #   servicePort: 8080
-  # - host: host2.example.com (uncomment and configure similarly)
-  # - host: host3.example.com (uncomment and configure similarly)
