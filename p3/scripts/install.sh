@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 
 install_docker() {
@@ -18,6 +18,7 @@ install_docker() {
     sudo chmod a+r /etc/apt/keyrings/docker.asc
 
     # Add the repository to Apt sources:
+    DEBIAN_FRONTEND=noninteractive
     echo \
     "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
     $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
@@ -28,11 +29,12 @@ install_docker() {
     sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 
     # PostInstall : use docker without sudo
-    sudo groupadd docker
     sudo usermod -aG docker $USER
     newgrp docker
 
     echo "Docker installed successfully"
+
+    # OK
 
 }
 
@@ -40,18 +42,21 @@ install_docker() {
 install_kubectl() {
 
     # Install kubectl
-    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 
-    sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+    # Download the latest release:
+    if [ "$(uname -m)" = "aarch64" ]; then
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/arm64/kubectl"
+    else
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+    fi
 
+    # Make the download executable and put it in the PATH
     chmod +x kubectl
-    mkdir -p ~/.local/bin
-    mv ./kubectl ~/.local/bin/kubectl
-
-    echo "export PATH=$PATH:~/.local/bin" >> ~/.bashrc
-    source ~/.bashrc
+    sudo mv ./kubectl /usr/local/bin/kubectl
 
     echo "Kubectl installed successfully"
+
+    # OK
 
 }
 
@@ -62,49 +67,44 @@ install_k3d() {
 
     echo "K3D installed successfully"
 
+    # OK
 }
 
 
 install_argocd() {
 
     # Install ArgoCD
-
     sudo kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-
     sudo kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
-
-    # sudo kubectl wait --for=condition=Ready pods --all --timeout=600s -n argocd
-
-    sudo kubectl port-forward svc/argocd-server -n argocd 8080:443 --address="0.0.0.0" > /dev/null 2>&1 & echo "ArgoCD installed successfully"
-
+    sleep 10
+    sudo kubectl wait --for=condition=Ready pods --all --timeout=3600s -n argocd
+    cmd="sudo kubectl port-forward svc/argocd-server -n argocd 8080:443 --address="0.0.0.0"";
+    ${cmd} &>/dev/null & disown;
+    echo "ArgoCD installed successfully"
 
     # Install ArgoCD CLI
-
-    curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
-    sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
-    rm argocd-linux-amd64
-
+    if [ "$(uname -m)" = "aarch64" ]; then
+        curl -sSL -o argocd-linux https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-arm64
+    else
+        curl -sSL -o argocd-linux https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+    fi
+    sudo install -m 555 argocd-linux /usr/local/bin/argocd
+    rm argocd-linux
     echo "ArgoCD CLI installed successfully"
 
-    # Get ArgoCD password
-    initial_password=$(\
-        sudo argocd admin initial-password -n argocd | head -n 1\
-    )
+    # Change the default password of argocd
+    # sudo kubectl patch secret argocd-secret -n argocd -p '{"data": {"admin.password": null, "admin.passwordMtime": null}}'
+    # sudo kubectl delete pods -n argocd -l app.kubernetes.io/name=argocd-server
+    # sudo kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
 
-    # Generate a new password
-    new_password=$(openssl rand -base64 32)
+    password=$(sudo kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
+    argocd login localhost:8080 --username admin --password $password --insecure
 
+    echo "ArgoCD setup complete"
+
+    echo "ArgoCD URL: https://192.168.56.110:8080"
     echo "ArgoCD username: admin"
-    echo "ArgoCD password: $initial_password"
-
-    argocd login localhost:8080 --username admin --password $initial_password --insecure
-
-    argocd account update-password --current-password $initial_password --new-password $new_password
-
-    echo "ArgoCD password updated successfully"
-
-    echo "Your new ArgoCD password is: $new_password"
-
+    echo "ArgoCD password: $password"
 }
 
 
@@ -112,23 +112,22 @@ setup_pipeline() {
 
     sudo kubectl config set-context --current --namespace=argocd
 
-    cd /vagrant/confs/app
+    password=$(sudo kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
+    sudo argocd login localhost:8080 --username admin --password $password --insecure
 
-    argocd app create victory-royale \
-        --repo https://github.com/cmariot/app_iot_cmariot.git \
-        --path /vagrant/confs/app \
-        --dest-server https://kubernetes.default.svc \
-        --dest-namespace dev
+    git clone https://github.com/cmariot/app_iot_cmariot.git
 
-    sleep 10
+    cd app_iot_cmariot
 
-    argocd app set victory-royale --sync-policy automated
+    sudo argocd app create victory-royale --repo https://github.com/cmariot/app_iot_cmariot.git --path . --dest-server https://kubernetes.default.svc --dest-namespace dev
 
-    argocd app sync victory-royale
+    sudo argocd app set victory-royale --sync-policy automated
 
-    sudo kubectl port-forward services/victory-royale 8888 \
-        -n dev --address="0.0.0.0" > /dev/null 2>&1 & \
-        echo "CI/CD pipeline setup successfully"
+    sudo argocd app sync victory-royale
+
+    cmd="sudo kubectl port-forward services/victory-royale 8888 -n dev --address='0.0.0.0'";
+    ${cmd} &>/dev/null & disown;
+
 }
 
 
@@ -147,8 +146,9 @@ main() {
     sudo k3d cluster create iotcluster
 
     # Create two namespaces: argocd and dev
-    kubectl create namespace argocd
-    kubectl create namespace dev
+    sudo kubectl create namespace argocd
+    sudo kubectl create namespace dev
+    # Hint: list the kubernetes namespaces with `sudo kubectl get namespaces`
 
     # Install ArgoCD
     install_argocd
