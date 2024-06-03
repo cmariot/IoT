@@ -1,9 +1,9 @@
 #!/bin/bash
 
 
-install_docker() {
 
-    export DEBIAN_FRONTEND=noninteractive
+
+install_docker() {
 
     # Uninstall all conflicting packages
     for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc;
@@ -11,14 +11,12 @@ install_docker() {
     done
 
     # Add Docker's official GPG key:
-    sudo apt-get update
-    sudo apt-get install ca-certificates curl -y
+    # sudo apt-get install ca-certificates curl -y
     sudo install -m 0755 -d /etc/apt/keyrings
     sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
     sudo chmod a+r /etc/apt/keyrings/docker.asc
 
     # Add the repository to Apt sources:
-    DEBIAN_FRONTEND=noninteractive
     echo \
     "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
     $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
@@ -41,13 +39,11 @@ install_docker() {
 
 install_kubectl() {
 
-    # Install kubectl
-
     # Download the latest release:
     if [ "$(uname -m)" = "aarch64" ]; then
-        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/arm64/kubectl"
+        curl -LOs "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/arm64/kubectl"
     else
-        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        curl -LOs "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
     fi
 
     # Make the download executable and put it in the PATH
@@ -73,11 +69,17 @@ install_k3d() {
 
 install_argocd() {
 
-    # Install ArgoCD
+    # Install ArgoCD as a kubernetes service
     sudo kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
     sudo kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
     sleep 10
-    sudo kubectl wait --for=condition=Ready pods --all --timeout=3600s -n argocd
+
+    # Loop here to avoid sleep 10 ?
+    echo "Start waiting ..."
+    wait_return_value=$(sudo kubectl wait --for=condition=Ready pods --all --timeout=3600s -n argocd)
+    echo -n "Return value of kubectl wait: "
+    echo $wait_return_value
+
     cmd="sudo kubectl port-forward svc/argocd-server -n argocd 8080:443 --address="0.0.0.0"";
     ${cmd} &>/dev/null & disown;
     echo "ArgoCD installed successfully"
@@ -113,11 +115,12 @@ setup_pipeline() {
     sudo kubectl config set-context --current --namespace=argocd
 
     password=$(sudo kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
+
     sudo argocd login localhost:8080 --username admin --password $password --insecure
 
-    git clone https://github.com/cmariot/app_iot_cmariot.git
+    git clone https://github.com/cmariot/app_iot_cmariot.git app_iot_cmariot_test
 
-    cd app_iot_cmariot
+    cd app_iot_cmariot_test
 
     sudo argocd app create victory-royale --repo https://github.com/cmariot/app_iot_cmariot.git --path . --dest-server https://kubernetes.default.svc --dest-namespace dev
 
@@ -125,13 +128,18 @@ setup_pipeline() {
 
     sudo argocd app sync victory-royale
 
+    sleep 10
+
     cmd="sudo kubectl port-forward services/victory-royale 8888 -n dev --address='0.0.0.0'";
+
     ${cmd} &>/dev/null & disown;
 
 }
 
 
 main() {
+
+    sudo apt-get update
 
     # install Docker (required by K3D)
     install_docker
