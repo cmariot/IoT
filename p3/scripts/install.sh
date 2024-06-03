@@ -1,30 +1,40 @@
 #!/bin/bash
 
 
-
-
 install_docker() {
 
+    echo "Installing Docker"
+
     # Uninstall all conflicting packages
-    for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc;
+    for pkg in docker.io \
+               docker-doc \
+               docker-compose \
+               docker-compose-v2 \
+               podman-docker \
+               containerd \
+               runc;
         do sudo apt-get remove $pkg;
     done
 
     # Add Docker's official GPG key:
-    # sudo apt-get install ca-certificates curl -y
     sudo install -m 0755 -d /etc/apt/keyrings
     sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
     sudo chmod a+r /etc/apt/keyrings/docker.asc
 
     # Add the repository to Apt sources:
     echo \
-    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-    $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-    sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+        $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+        sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
     sudo apt-get update
 
     # Install Docker
-    sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+    sudo apt-get install docker-ce \
+                         docker-ce-cli \
+                         containerd.io \
+                         docker-buildx-plugin \
+                         docker-compose-plugin -y
 
     # PostInstall : use docker without sudo
     sudo usermod -aG docker $USER
@@ -32,12 +42,12 @@ install_docker() {
 
     echo "Docker installed successfully"
 
-    # OK
-
 }
 
 
 install_kubectl() {
+
+    echo "Installing Kubectl"
 
     # Download the latest release:
     if [ "$(uname -m)" = "aarch64" ]; then
@@ -52,33 +62,32 @@ install_kubectl() {
 
     echo "Kubectl installed successfully"
 
-    # OK
-
 }
 
 
 install_k3d() {
 
+    echo "Installing K3D"
+
     curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
 
     echo "K3D installed successfully"
 
-    # OK
 }
 
 
 install_argocd() {
 
+    echo "Installing ArgoCD"
+
     # Install ArgoCD as a kubernetes service
     sudo kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-    sudo kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
-    sleep 10
 
-    # Loop here to avoid sleep 10 ?
-    echo "Start waiting ..."
-    wait_return_value=$(sudo kubectl wait --for=condition=Ready pods --all --timeout=3600s -n argocd)
-    echo -n "Return value of kubectl wait: "
-    echo $wait_return_value
+    # Change the service type to LoadBalancer
+    sudo kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
+
+    # Wait for the pods to be ready
+    sudo kubectl wait --for=condition=Ready pods --all --timeout=3600s -n argocd
 
     cmd="sudo kubectl port-forward svc/argocd-server -n argocd 8080:443 --address="0.0.0.0"";
     ${cmd} &>/dev/null & disown;
@@ -86,9 +95,11 @@ install_argocd() {
 
     # Install ArgoCD CLI
     if [ "$(uname -m)" = "aarch64" ]; then
-        curl -sSL -o argocd-linux https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-arm64
+        curl -sSL -o argocd-linux \
+            https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-arm64
     else
-        curl -sSL -o argocd-linux https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+        curl -sSL -o argocd-linux \
+            https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
     fi
     sudo install -m 555 argocd-linux /usr/local/bin/argocd
     rm argocd-linux
@@ -107,6 +118,7 @@ install_argocd() {
     echo "ArgoCD URL: https://192.168.56.110:8080"
     echo "ArgoCD username: admin"
     echo "ArgoCD password: $password"
+
 }
 
 
@@ -118,9 +130,9 @@ setup_pipeline() {
 
     sudo argocd login localhost:8080 --username admin --password $password --insecure
 
-    git clone https://github.com/cmariot/app_iot_cmariot.git app_iot_cmariot_test
+    git clone https://github.com/cmariot/app_iot_cmariot.git
 
-    cd app_iot_cmariot_test
+    cd app_iot_cmariot
 
     sudo argocd app create victory-royale --repo https://github.com/cmariot/app_iot_cmariot.git --path . --dest-server https://kubernetes.default.svc --dest-namespace dev
 
@@ -128,11 +140,21 @@ setup_pipeline() {
 
     sudo argocd app sync victory-royale
 
-    sleep 10
+    # Error : When the port-forwarding is stopped, the pipeline stops working
+    # Solution : Run the port-forwarding in a loop ?
+    # Better solution : Use a LoadBalancer service instead of port-forwarding
+    while true; do
 
-    cmd="sudo kubectl port-forward services/victory-royale 8888 -n dev --address='0.0.0.0'";
+        # Wait for the pods to be ready
+        sudo kubectl wait --for=condition=Ready pods --all --timeout=3600s -n dev
 
-    ${cmd} &>/dev/null & disown;
+        # Port-forward the service to localhost
+        cmd="sudo kubectl port-forward services/victory-royale 8888 -n dev --address='0.0.0.0'";
+        ${cmd} & disown;
+
+        sleep 5
+
+    done
 
 }
 
@@ -165,5 +187,6 @@ main() {
     setup_pipeline
 
 }
+
 
 main
