@@ -1,0 +1,10 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ResourceHook
+metadata:
+  name: after-sync  # Descriptive name for your hook
+  namespace: hello  # Replace if your Argo CD is in a different namespace
+  annotations:
+    hello.argoproj.io/hook: Sync  # Change to PreSync if desired
+spec:
+  exec:  # Specify execution details
+    # command: ["kubectl", "port-forward", "services/victory-royale", "8888", "-n", "dev", "--address='0.0.0.0'"]
