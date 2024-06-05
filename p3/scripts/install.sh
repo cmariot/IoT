@@ -123,7 +123,8 @@ main() {
     sudo kubectl create namespace argocd
     sudo kubectl create namespace dev
 
-    
+    k3d kubeconfig merge iotcluster
+    # k3d kubeconfig get iotcluster > ~/.kube/config
 
     # Install ArgoCD
     install_argocd
