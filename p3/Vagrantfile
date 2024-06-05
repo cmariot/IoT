@@ -1,5 +1,5 @@
 BOX_IMAGE = "bento/ubuntu-24.04"
-VM_PROVIDER = "vmware_fusion"
+VM_PROVIDER = "virtualbox"
 
 # Server
 SERVER_NAME = "wloS"
