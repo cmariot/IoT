@@ -91,70 +91,14 @@ install_argocd() {
 
     cmd="sudo kubectl port-forward svc/argocd-server -n argocd 8080:443 --address="0.0.0.0"";
     ${cmd} &>/dev/null & disown;
+
     echo "ArgoCD installed successfully"
 
-    # Install ArgoCD CLI
-    # if [ "$(uname -m)" = "aarch64" ]; then
-    #     curl -sSL -o argocd-linux \
-    #         https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-arm64
-    # else
-    #     curl -sSL -o argocd-linux \
-    #         https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
-    # fi
-    # sudo install -m 555 argocd-linux /usr/local/bin/argocd
-    # rm argocd-linux
-    # echo "ArgoCD CLI installed successfully"
-
-    # Change the default password of argocd
-    # sudo kubectl patch secret argocd-secret -n argocd -p '{"data": {"admin.password": null, "admin.passwordMtime": null}}'
-    # sudo kubectl delete pods -n argocd -l app.kubernetes.io/name=argocd-server
-    # sudo kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
 
     password=$(sudo kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
-    # argocd login localhost:8080 --username admin --password $password --insecure
-
-    # echo "ArgoCD setup complete"
-
     echo "ArgoCD URL: https://192.168.56.110:8080"
     echo "ArgoCD username: admin"
     echo "ArgoCD password: $password"
-
-}
-
-
-setup_pipeline() {
-
-    sudo kubectl config set-context --current --namespace=argocd
-
-    password=$(sudo kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
-
-    sudo argocd login localhost:8080 --username admin --password $password --insecure
-
-    git clone https://github.com/cmariot/app_iot_cmariot.git
-
-    cd app_iot_cmariot
-
-    sudo argocd app create victory-royale --repo https://github.com/cmariot/app_iot_cmariot.git --path . --dest-server https://kubernetes.default.svc --dest-namespace dev
-
-    sudo argocd app set victory-royale --sync-policy automated
-
-    sudo argocd app sync victory-royale
-
-    # Error : When the port-forwarding is stopped, the pipeline stops working
-    # Solution : Run the port-forwarding in a loop ?
-    # Better solution : Use a LoadBalancer service instead of port-forwarding
-    while true; do
-
-        # Wait for the pods to be ready
-        sudo kubectl wait --for=condition=Ready pods --all --timeout=3600s -n dev
-
-        # Port-forward the service to localhost
-        cmd="sudo kubectl port-forward services/victory-royale 8888 -n dev --address='0.0.0.0'";
-        ${cmd} & disown;
-
-        sleep 5
-
-    done
 
 }
 
@@ -174,19 +118,17 @@ main() {
 
     # Create a k3d cluster
     sudo k3d cluster create iotcluster -p 8888:8888@loadbalancer
-    # -p 8443:443@loadbalancer -p 8080:80@loadbalancer
+
     # Create two namespaces: argocd and dev
     sudo kubectl create namespace argocd
     sudo kubectl create namespace dev
-    # Hint: list the kubernetes namespaces with `sudo kubectl get namespaces`
 
+    
 
-    k3d kubeconfig get iotcluster > ~/.kube/config
     # Install ArgoCD
     install_argocd
 
     # Setup CI/CD pipeline
-    # setup_pipeline
     sudo kubectl apply -f /vagrant/confs/argocd_app.yaml
 
 }
