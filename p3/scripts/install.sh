@@ -94,16 +94,16 @@ install_argocd() {
     echo "ArgoCD installed successfully"
 
     # Install ArgoCD CLI
-    if [ "$(uname -m)" = "aarch64" ]; then
-        curl -sSL -o argocd-linux \
-            https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-arm64
-    else
-        curl -sSL -o argocd-linux \
-            https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
-    fi
-    sudo install -m 555 argocd-linux /usr/local/bin/argocd
-    rm argocd-linux
-    echo "ArgoCD CLI installed successfully"
+    # if [ "$(uname -m)" = "aarch64" ]; then
+    #     curl -sSL -o argocd-linux \
+    #         https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-arm64
+    # else
+    #     curl -sSL -o argocd-linux \
+    #         https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+    # fi
+    # sudo install -m 555 argocd-linux /usr/local/bin/argocd
+    # rm argocd-linux
+    # echo "ArgoCD CLI installed successfully"
 
     # Change the default password of argocd
     # sudo kubectl patch secret argocd-secret -n argocd -p '{"data": {"admin.password": null, "admin.passwordMtime": null}}'
@@ -111,9 +111,9 @@ install_argocd() {
     # sudo kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
 
     password=$(sudo kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
-    argocd login localhost:8080 --username admin --password $password --insecure
+    # argocd login localhost:8080 --username admin --password $password --insecure
 
-    echo "ArgoCD setup complete"
+    # echo "ArgoCD setup complete"
 
     echo "ArgoCD URL: https://192.168.56.110:8080"
     echo "ArgoCD username: admin"
@@ -173,18 +173,21 @@ main() {
     install_k3d
 
     # Create a k3d cluster
-    sudo k3d cluster create iotcluster
-
+    sudo k3d cluster create iotcluster -p 8888:8888@loadbalancer
+    # -p 8443:443@loadbalancer -p 8080:80@loadbalancer
     # Create two namespaces: argocd and dev
     sudo kubectl create namespace argocd
     sudo kubectl create namespace dev
     # Hint: list the kubernetes namespaces with `sudo kubectl get namespaces`
 
+
+    k3d kubeconfig get iotcluster > ~/.kube/config
     # Install ArgoCD
     install_argocd
 
     # Setup CI/CD pipeline
-    setup_pipeline
+    # setup_pipeline
+    sudo kubectl apply -f /vagrant/confs/argocd_app.yaml
 
 }
 
