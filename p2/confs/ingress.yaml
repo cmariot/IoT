@@ -1,5 +1,4 @@
-apiVersion: networking.k8s.io/v1  # Assuming you're using networking.k8s.io/v1 API version
-# apiVersion: extensions/v1beta1 (uncomment if using older API version)
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: multi-host-ingress
@@ -12,7 +11,7 @@ spec:
           pathType: Prefix
           backend:
             service:
-              name: app1-service
+              name: app-one
               port:
                 number: 80
   - host: app2.com
@@ -22,7 +21,7 @@ spec:
           pathType: Prefix
           backend:
             service:
-              name: app2-service
+              name: app-two
               port:
                 number: 80
   - http:
@@ -31,6 +30,6 @@ spec:
           pathType: Prefix
           backend:
             service:
-              name: app3-service
+              name: app-three
               port:
                 number: 80

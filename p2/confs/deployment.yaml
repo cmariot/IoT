@@ -1,66 +1,62 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app1-deployment
+  name: app-one
 spec:
   selector:
     matchLabels:
-      app: app1
+      app: app-one
   replicas: 1
   template:
     metadata:
       labels:
-        app: app1
+        app: app-one
     spec:
       containers:
-      - name: app1
+      - name: app-one
         image: cmariot/app1
         ports:
         - containerPort: 80 #internal port
 
-
-# Pod status still ContainerCreating :
-# kubectl get events --sort-by=.metadata.creationTimestamp
-
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app2-deployment
+  name: app-two
 spec:
   selector:
     matchLabels:
-      app: app2
+      app: app-two
   replicas: 3
   template:
     metadata:
       labels:
-        app: app2
+        app: app-two
     spec:
       containers:
-      - name: app2
+      - name: app-two
         image: cmariot/app2
         ports:
-        - containerPort: 80 #internal port
+        - containerPort: 80
 
 ---
 
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app3-deployment
+  name: app-three
 spec:
   selector:
     matchLabels:
-      app: app3
+      app: app-three
   replicas: 1
   template:
     metadata:
       labels:
-        app: app3
+        app: app-three
     spec:
       containers:
-      - name: app3
+      - name: app-three
         image: cmariot/app3
         ports:
-        - containerPort: 80 #internal port
+        - containerPort: 80

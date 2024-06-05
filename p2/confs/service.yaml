@@ -1,37 +1,40 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: app1-service
+  name: app-one
 spec:
   selector:
-    app: app1
+    app: app-one
   ports:
   - protocol: TCP
-    port: 80  # Service port to expose (default HTTP)
-    targetPort: 80  # Maps to container port
+    port: 80
+    targetPort: 80
   type: ClusterIP  # Service accessible only within the cluster
 
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
-  name: app2-service
+  name: app-two
 spec:
   selector:
-    app: app2
+    app: app-two
   ports:
   - protocol: TCP
     port: 80
     targetPort: 80
   type: ClusterIP
+
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
-   name: app3-service
+   name: app-three
 spec:
   selector:
-    app: app3
+    app: app-three
   ports:
   - protocol: TCP
     port: 80
