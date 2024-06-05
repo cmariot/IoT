@@ -7,6 +7,9 @@ These steps will get you started with Kubernetes
 
 This project will consist of setting up several environments under specific rules.
 It is divided into three parts you have to do in the following order:
+
 • Part 1: K3s and Vagrant
+
 • Part 2: K3s and three simple applications
+
 • Part 3: K3d and Argo CD
