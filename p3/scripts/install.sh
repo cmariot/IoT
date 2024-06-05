@@ -180,8 +180,8 @@ main() {
     sudo kubectl create namespace dev
     # Hint: list the kubernetes namespaces with `sudo kubectl get namespaces`
 
-
-    k3d kubeconfig get iotcluster > ~/.kube/config
+    k3d kubeconfig merge iotcluster
+    # k3d kubeconfig get iotcluster > ~/.kube/config
     # Install ArgoCD
     install_argocd
 
